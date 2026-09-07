@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.bank.controller.TransactionHistoryIntegrationTest
+-------------------------------------------------------------------------------
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 7.884 s -- in com.bank.controller.TransactionHistoryIntegrationTest
