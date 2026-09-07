@@ -15,8 +15,12 @@ class JwtTokenProviderTest {
     @BeforeEach
     void setUp() {
         jwtTokenProvider = new JwtTokenProvider();
-        // Set test secret (256-bit base64 encoded key)
-        ReflectionTestUtils.setField(jwtTokenProvider, "jwtSecret", "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970");
+        // Set generic unit-test secret
+        String testSecret = System.getenv("JWT_SECRET") != null && !System.getenv("JWT_SECRET").isBlank()
+                ? System.getenv("JWT_SECRET")
+                : "TestOnlyDummySecretKeyForUnitTestingPurposesOnly1234567890=";
+
+        ReflectionTestUtils.setField(jwtTokenProvider, "jwtSecret", testSecret);
         ReflectionTestUtils.setField(jwtTokenProvider, "jwtExpirationMs", 3600000L); // 1 hour
     }
 

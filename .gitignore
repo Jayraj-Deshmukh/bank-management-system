@@ -1,0 +1,26 @@
+# Target & Build Artifacts
+target/
+**/target/
+*.jar
+*.war
+*.ear
+
+# Compiled Java Classes
+*.class
+
+# IDE & Editor Files
+.idea/
+*.iml
+.vscode/
+*.ipr
+*.iws
+
+# Environment & Secret Files
+.env
+.env.*
+*.env
+*.log
+
+# OS Files
+.DS_Store
+Thumbs.db
