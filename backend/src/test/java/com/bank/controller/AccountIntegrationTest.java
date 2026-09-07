@@ -144,7 +144,7 @@ class AccountIntegrationTest {
         mockMvc.perform(get("/api/admin/accounts")
                 .header("Authorization", "Bearer " + adminJwt))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.length()").value(2));
+                .andExpect(jsonPath("$.data.content.length()").value(2));
     }
 
     @Test

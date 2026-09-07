@@ -1,9 +1,11 @@
+com\bank\controller\AdminController.class
 com\bank\entity\enums\AccountStatus.class
 com\bank\security\CustomUserDetailsService.class
 com\bank\entity\package-info.class
 com\bank\exception\GlobalExceptionHandler.class
 com\bank\controller\AccountController.class
 com\bank\repository\UserRepository.class
+com\bank\dto\UpdateAccountStatusRequest.class
 com\bank\service\AccountService.class
 com\bank\dto\DepositRequest.class
 com\bank\service\impl\AuthServiceImpl.class
@@ -14,6 +16,7 @@ com\bank\dto\package-info.class
 com\bank\dto\TransferRequest.class
 com\bank\controller\AuthController.class
 com\bank\exception\DuplicateEmailException.class
+com\bank\service\impl\AdminServiceImpl.class
 com\bank\config\SecurityConfig.class
 com\bank\security\JwtTokenProvider.class
 com\bank\security\JwtAuthenticationFilter.class
@@ -29,7 +32,6 @@ com\bank\dto\RegisterRequest.class
 com\bank\exception\ResourceNotFoundException.class
 com\bank\dto\UserDTO.class
 com\bank\repository\AccountRepository.class
-com\bank\controller\AdminAccountController.class
 com\bank\dto\AccountResponse.class
 com\bank\dto\ApiResponse.class
 com\bank\exception\package-info.class
@@ -45,6 +47,7 @@ com\bank\entity\enums\AccountType.class
 com\bank\dto\TransactionResponse.class
 com\bank\service\impl\AccountServiceImpl.class
 com\bank\service\TransactionService.class
+com\bank\service\AdminService.class
 com\bank\dto\CreateAccountRequest.class
 com\bank\entity\enums\UserRole.class
 com\bank\exception\AccountInactiveException.class

@@ -1,3 +1,4 @@
+com\bank\controller\AdminIntegrationTest.class
 com\bank\controller\TransferIntegrationTest.class
 com\bank\repository\UserRepositoryTest.class
 com\bank\controller\SecurityIntegrationTest.class
@@ -12,3 +13,4 @@ com\bank\repository\AccountRepositoryTest.class
 com\bank\service\AccountServiceTest.class
 com\bank\service\AuthServiceTest.class
 com\bank\controller\DepositIntegrationTest.class
+com\bank\service\AdminServiceTest.class

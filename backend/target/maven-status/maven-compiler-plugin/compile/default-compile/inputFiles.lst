@@ -2,7 +2,7 @@ E:\bank-management-system\backend\src\main\java\com\bank\BankApplication.java
 E:\bank-management-system\backend\src\main\java\com\bank\config\package-info.java
 E:\bank-management-system\backend\src\main\java\com\bank\config\SecurityConfig.java
 E:\bank-management-system\backend\src\main\java\com\bank\controller\AccountController.java
-E:\bank-management-system\backend\src\main\java\com\bank\controller\AdminAccountController.java
+E:\bank-management-system\backend\src\main\java\com\bank\controller\AdminController.java
 E:\bank-management-system\backend\src\main\java\com\bank\controller\AuthController.java
 E:\bank-management-system\backend\src\main\java\com\bank\controller\HealthController.java
 E:\bank-management-system\backend\src\main\java\com\bank\controller\TestController.java
@@ -19,6 +19,7 @@ E:\bank-management-system\backend\src\main\java\com\bank\dto\RegisterRequest.jav
 E:\bank-management-system\backend\src\main\java\com\bank\dto\TransactionResponse.java
 E:\bank-management-system\backend\src\main\java\com\bank\dto\TransferRequest.java
 E:\bank-management-system\backend\src\main\java\com\bank\dto\TransferResponse.java
+E:\bank-management-system\backend\src\main\java\com\bank\dto\UpdateAccountStatusRequest.java
 E:\bank-management-system\backend\src\main\java\com\bank\dto\UserDTO.java
 E:\bank-management-system\backend\src\main\java\com\bank\dto\WithdrawalRequest.java
 E:\bank-management-system\backend\src\main\java\com\bank\entity\Account.java
@@ -43,8 +44,10 @@ E:\bank-management-system\backend\src\main\java\com\bank\security\CustomUserDeta
 E:\bank-management-system\backend\src\main\java\com\bank\security\JwtAuthenticationFilter.java
 E:\bank-management-system\backend\src\main\java\com\bank\security\JwtTokenProvider.java
 E:\bank-management-system\backend\src\main\java\com\bank\service\AccountService.java
+E:\bank-management-system\backend\src\main\java\com\bank\service\AdminService.java
 E:\bank-management-system\backend\src\main\java\com\bank\service\AuthService.java
 E:\bank-management-system\backend\src\main\java\com\bank\service\impl\AccountServiceImpl.java
+E:\bank-management-system\backend\src\main\java\com\bank\service\impl\AdminServiceImpl.java
 E:\bank-management-system\backend\src\main\java\com\bank\service\impl\AuthServiceImpl.java
 E:\bank-management-system\backend\src\main\java\com\bank\service\impl\TransactionServiceImpl.java
 E:\bank-management-system\backend\src\main\java\com\bank\service\package-info.java

@@ -1,4 +1,5 @@
 E:\bank-management-system\backend\src\test\java\com\bank\controller\AccountIntegrationTest.java
+E:\bank-management-system\backend\src\test\java\com\bank\controller\AdminIntegrationTest.java
 E:\bank-management-system\backend\src\test\java\com\bank\controller\DepositIntegrationTest.java
 E:\bank-management-system\backend\src\test\java\com\bank\controller\SecurityIntegrationTest.java
 E:\bank-management-system\backend\src\test\java\com\bank\controller\TransactionHistoryIntegrationTest.java
@@ -10,5 +11,6 @@ E:\bank-management-system\backend\src\test\java\com\bank\repository\TransactionR
 E:\bank-management-system\backend\src\test\java\com\bank\repository\UserRepositoryTest.java
 E:\bank-management-system\backend\src\test\java\com\bank\security\JwtTokenProviderTest.java
 E:\bank-management-system\backend\src\test\java\com\bank\service\AccountServiceTest.java
+E:\bank-management-system\backend\src\test\java\com\bank\service\AdminServiceTest.java
 E:\bank-management-system\backend\src\test\java\com\bank\service\AuthServiceTest.java
 E:\bank-management-system\backend\src\test\java\com\bank\service\TransactionServiceTest.java

@@ -32,4 +32,16 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate,
             Pageable pageable);
+
+    @Query("SELECT t FROM Transaction t WHERE " +
+           "(:accountNumber IS NULL OR t.account.accountNumber = :accountNumber) " +
+           "AND (:type IS NULL OR t.transactionType = :type) " +
+           "AND (:startDate IS NULL OR t.createdAt >= :startDate) " +
+           "AND (:endDate IS NULL OR t.createdAt <= :endDate)")
+    Page<Transaction> findAllTransactionsFiltered(
+            @Param("accountNumber") String accountNumber,
+            @Param("type") TransactionType type,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            Pageable pageable);
 }
