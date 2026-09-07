@@ -17,6 +17,8 @@ E:\bank-management-system\backend\src\main\java\com\bank\dto\package-info.java
 E:\bank-management-system\backend\src\main\java\com\bank\dto\PageResponse.java
 E:\bank-management-system\backend\src\main\java\com\bank\dto\RegisterRequest.java
 E:\bank-management-system\backend\src\main\java\com\bank\dto\TransactionResponse.java
+E:\bank-management-system\backend\src\main\java\com\bank\dto\TransferRequest.java
+E:\bank-management-system\backend\src\main\java\com\bank\dto\TransferResponse.java
 E:\bank-management-system\backend\src\main\java\com\bank\dto\UserDTO.java
 E:\bank-management-system\backend\src\main\java\com\bank\dto\WithdrawalRequest.java
 E:\bank-management-system\backend\src\main\java\com\bank\entity\Account.java

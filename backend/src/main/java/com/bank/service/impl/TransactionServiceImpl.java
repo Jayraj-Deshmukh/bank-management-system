@@ -1,9 +1,6 @@
 package com.bank.service.impl;
 
-import com.bank.dto.DepositRequest;
-import com.bank.dto.PageResponse;
-import com.bank.dto.TransactionResponse;
-import com.bank.dto.WithdrawalRequest;
+import com.bank.dto.*;
 import com.bank.entity.Account;
 import com.bank.entity.Transaction;
 import com.bank.entity.enums.AccountStatus;
@@ -122,6 +119,105 @@ public class TransactionServiceImpl implements TransactionService {
 
         Transaction savedTransaction = transactionRepository.save(transaction);
         return TransactionResponse.fromEntity(savedTransaction);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public TransferResponse transfer(TransferRequest request, String userEmail, boolean isAdmin) {
+        if (request.getFromAccount().equals(request.getToAccount())) {
+            throw new IllegalArgumentException("Self-transfer is not allowed. Source and destination accounts must be different.");
+        }
+
+        // Deterministic Lock Ordering (prevents deadlocks on concurrent opposite transfers)
+        Account firstLockAccount;
+        Account secondLockAccount;
+
+        if (request.getFromAccount().compareTo(request.getToAccount()) < 0) {
+            firstLockAccount = accountRepository.findByAccountNumberForUpdate(request.getFromAccount())
+                    .orElseThrow(() -> new ResourceNotFoundException("Source account not found: " + request.getFromAccount()));
+            secondLockAccount = accountRepository.findByAccountNumberForUpdate(request.getToAccount())
+                    .orElseThrow(() -> new ResourceNotFoundException("Destination account not found: " + request.getToAccount()));
+        } else {
+            firstLockAccount = accountRepository.findByAccountNumberForUpdate(request.getToAccount())
+                    .orElseThrow(() -> new ResourceNotFoundException("Destination account not found: " + request.getToAccount()));
+            secondLockAccount = accountRepository.findByAccountNumberForUpdate(request.getFromAccount())
+                    .orElseThrow(() -> new ResourceNotFoundException("Source account not found: " + request.getFromAccount()));
+        }
+
+        Account fromAccount = request.getFromAccount().equals(firstLockAccount.getAccountNumber()) ? firstLockAccount : secondLockAccount;
+        Account toAccount = request.getToAccount().equals(firstLockAccount.getAccountNumber()) ? firstLockAccount : secondLockAccount;
+
+        // Sender ownership check
+        if (!isAdmin && !fromAccount.getUser().getEmail().equals(userEmail)) {
+            throw new AccessDeniedException("Access denied: you do not own the source account");
+        }
+
+        // Account status checks
+        if (fromAccount.getStatus() != AccountStatus.ACTIVE) {
+            throw new AccountInactiveException("Source account is not active: " + fromAccount.getStatus());
+        }
+        if (toAccount.getStatus() != AccountStatus.ACTIVE) {
+            throw new AccountInactiveException("Destination account is not active: " + toAccount.getStatus());
+        }
+
+        BigDecimal transferAmount = request.getAmount();
+
+        // Insufficient balance check
+        if (fromAccount.getBalance().compareTo(transferAmount) < 0) {
+            throw new InsufficientBalanceException(
+                    "Insufficient balance for transfer. Current balance: " + fromAccount.getBalance() + ", Requested: " + transferAmount
+            );
+        }
+
+        // Update balances
+        BigDecimal senderNewBalance = fromAccount.getBalance().subtract(transferAmount);
+        BigDecimal receiverNewBalance = toAccount.getBalance().add(transferAmount);
+
+        fromAccount.setBalance(senderNewBalance);
+        toAccount.setBalance(receiverNewBalance);
+
+        accountRepository.save(fromAccount);
+        accountRepository.save(toAccount);
+
+        // Generate atomic transaction records
+        String groupId = UUID.randomUUID().toString();
+        String senderRef = "TXT-OUT-" + groupId;
+        String receiverRef = "TXT-IN-" + groupId;
+
+        String description = request.getDescription() != null && !request.getDescription().isBlank()
+                ? request.getDescription()
+                : "Fund Transfer";
+
+        Transaction senderTransaction = new Transaction(
+                senderRef,
+                TransactionType.TRANSFER_OUT,
+                transferAmount,
+                senderNewBalance,
+                "Transfer to " + toAccount.getAccountNumber() + " - " + description,
+                fromAccount
+        );
+
+        Transaction receiverTransaction = new Transaction(
+                receiverRef,
+                TransactionType.TRANSFER_IN,
+                transferAmount,
+                receiverNewBalance,
+                "Transfer from " + fromAccount.getAccountNumber() + " - " + description,
+                toAccount
+        );
+
+        transactionRepository.save(senderTransaction);
+        transactionRepository.save(receiverTransaction);
+
+        return new TransferResponse(
+                senderRef,
+                fromAccount.getAccountNumber(),
+                toAccount.getAccountNumber(),
+                transferAmount,
+                senderNewBalance,
+                description,
+                LocalDateTime.now()
+        );
     }
 
     @Override

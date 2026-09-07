@@ -2,6 +2,8 @@ E:\bank-management-system\backend\src\test\java\com\bank\controller\AccountInteg
 E:\bank-management-system\backend\src\test\java\com\bank\controller\DepositIntegrationTest.java
 E:\bank-management-system\backend\src\test\java\com\bank\controller\SecurityIntegrationTest.java
 E:\bank-management-system\backend\src\test\java\com\bank\controller\TransactionHistoryIntegrationTest.java
+E:\bank-management-system\backend\src\test\java\com\bank\controller\TransferConcurrencyTest.java
+E:\bank-management-system\backend\src\test\java\com\bank\controller\TransferIntegrationTest.java
 E:\bank-management-system\backend\src\test\java\com\bank\controller\WithdrawalIntegrationTest.java
 E:\bank-management-system\backend\src\test\java\com\bank\repository\AccountRepositoryTest.java
 E:\bank-management-system\backend\src\test\java\com\bank\repository\TransactionRepositoryTest.java

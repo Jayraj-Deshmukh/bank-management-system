@@ -11,6 +11,7 @@ com\bank\controller\HealthController.class
 com\bank\service\AuthService.class
 com\bank\dto\AuthResponse.class
 com\bank\dto\package-info.class
+com\bank\dto\TransferRequest.class
 com\bank\controller\AuthController.class
 com\bank\exception\DuplicateEmailException.class
 com\bank\config\SecurityConfig.class
@@ -20,6 +21,7 @@ com\bank\entity\Transaction.class
 com\bank\repository\TransactionRepository.class
 com\bank\dto\WithdrawalRequest.class
 com\bank\dto\PageResponse.class
+com\bank\dto\TransferResponse.class
 com\bank\service\impl\TransactionServiceImpl.class
 com\bank\dto\LoginRequest.class
 com\bank\controller\TransactionController.class

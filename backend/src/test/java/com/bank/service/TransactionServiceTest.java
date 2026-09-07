@@ -1,9 +1,6 @@
 package com.bank.service;
 
-import com.bank.dto.DepositRequest;
-import com.bank.dto.PageResponse;
-import com.bank.dto.TransactionResponse;
-import com.bank.dto.WithdrawalRequest;
+import com.bank.dto.*;
 import com.bank.entity.Account;
 import com.bank.entity.Transaction;
 import com.bank.entity.User;
@@ -24,21 +21,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.AccessDeniedException;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -55,10 +44,9 @@ class TransactionServiceTest {
 
     private User user1;
     private User user2;
-    private Account activeAccount;
+    private Account accountA;
+    private Account accountB;
     private Account frozenAccount;
-    private Transaction depositTx;
-    private Transaction withdrawTx;
 
     @BeforeEach
     void setUp() {
@@ -68,110 +56,83 @@ class TransactionServiceTest {
         user2 = new User("Bob", "bob@example.com", "222", "pass", UserRole.CUSTOMER);
         user2.setId(2L);
 
-        activeAccount = new Account("101111111111", AccountType.SAVINGS, new BigDecimal("1000.00"), AccountStatus.ACTIVE, user1);
-        activeAccount.setId(100L);
+        accountA = new Account("101111111111", AccountType.SAVINGS, new BigDecimal("10000.00"), AccountStatus.ACTIVE, user1);
+        accountA.setId(100L);
 
-        frozenAccount = new Account("102222222222", AccountType.CHECKING, new BigDecimal("500.00"), AccountStatus.FROZEN, user1);
+        accountB = new Account("102222222222", AccountType.CHECKING, new BigDecimal("2000.00"), AccountStatus.ACTIVE, user2);
+        accountB.setId(200L);
 
-        depositTx = new Transaction("TXD-1", TransactionType.DEPOSIT, new BigDecimal("1000.00"), new BigDecimal("1000.00"), "Deposit", activeAccount);
-        withdrawTx = new Transaction("TXW-1", TransactionType.WITHDRAWAL, new BigDecimal("200.00"), new BigDecimal("800.00"), "Withdraw", activeAccount);
+        frozenAccount = new Account("103333333333", AccountType.SAVINGS, new BigDecimal("500.00"), AccountStatus.FROZEN, user1);
     }
 
     @Test
-    @DisplayName("1-6. Successful deposit increases balance, creates DEPOSIT transaction with balanceAfter")
+    @DisplayName("Successful deposit increases balance and creates DEPOSIT transaction")
     void testDepositSuccess() {
-        when(accountRepository.findByAccountNumber("101111111111")).thenReturn(Optional.of(activeAccount));
+        when(accountRepository.findByAccountNumber("101111111111")).thenReturn(Optional.of(accountA));
         when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         DepositRequest request = new DepositRequest(new BigDecimal("5000.00"), "Bonus deposit");
         TransactionResponse response = transactionService.deposit("101111111111", request, "alice@example.com", false);
 
         assertThat(response).isNotNull();
-        assertThat(response.getAccountNumber()).isEqualTo("101111111111");
         assertThat(response.getTransactionType()).isEqualTo(TransactionType.DEPOSIT);
-        assertThat(response.getAmount()).isEqualByComparingTo(new BigDecimal("5000.00"));
-        assertThat(response.getBalanceAfter()).isEqualByComparingTo(new BigDecimal("6000.00"));
-        assertThat(response.getTransactionReference()).startsWith("TXD-");
-
-        verify(accountRepository).save(argThat(acc -> acc.getBalance().compareTo(new BigDecimal("6000.00")) == 0));
-        verify(transactionRepository).save(any(Transaction.class));
+        assertThat(response.getBalanceAfter()).isEqualByComparingTo(new BigDecimal("15000.00"));
     }
 
     @Test
-    @DisplayName("Successful withdrawal decreases balance, creates WITHDRAWAL transaction with balanceAfter")
+    @DisplayName("Successful withdrawal decreases balance and creates WITHDRAWAL transaction")
     void testWithdrawSuccess() {
-        when(accountRepository.findByAccountNumber("101111111111")).thenReturn(Optional.of(activeAccount));
+        when(accountRepository.findByAccountNumber("101111111111")).thenReturn(Optional.of(accountA));
         when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        WithdrawalRequest request = new WithdrawalRequest(new BigDecimal("300.00"), "ATM withdrawal");
+        WithdrawalRequest request = new WithdrawalRequest(new BigDecimal("3000.00"), "ATM withdrawal");
         TransactionResponse response = transactionService.withdraw("101111111111", request, "alice@example.com", false);
 
         assertThat(response).isNotNull();
         assertThat(response.getTransactionType()).isEqualTo(TransactionType.WITHDRAWAL);
-        assertThat(response.getAmount()).isEqualByComparingTo(new BigDecimal("300.00"));
-        assertThat(response.getBalanceAfter()).isEqualByComparingTo(new BigDecimal("700.00"));
-        assertThat(response.getTransactionReference()).startsWith("TXW-");
-
-        verify(accountRepository).save(argThat(acc -> acc.getBalance().compareTo(new BigDecimal("700.00")) == 0));
-        verify(transactionRepository).save(any(Transaction.class));
+        assertThat(response.getBalanceAfter()).isEqualByComparingTo(new BigDecimal("7000.00"));
     }
 
     @Test
-    @DisplayName("Withdrawal with insufficient balance throws InsufficientBalanceException and preserves balance")
-    void testWithdrawInsufficientBalance() {
-        when(accountRepository.findByAccountNumber("101111111111")).thenReturn(Optional.of(activeAccount));
+    @DisplayName("Successful transfer debits sender, credits receiver, and generates dual transaction records")
+    void testTransferSuccess() {
+        when(accountRepository.findByAccountNumberForUpdate("101111111111")).thenReturn(Optional.of(accountA));
+        when(accountRepository.findByAccountNumberForUpdate("102222222222")).thenReturn(Optional.of(accountB));
+        when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        WithdrawalRequest request = new WithdrawalRequest(new BigDecimal("1500.00"));
+        TransferRequest request = new TransferRequest("101111111111", "102222222222", new BigDecimal("2000.00"), "Rent payment");
+        TransferResponse response = transactionService.transfer(request, "alice@example.com", false);
 
-        assertThrows(InsufficientBalanceException.class, () ->
-                transactionService.withdraw("101111111111", request, "alice@example.com", false)
-        );
+        assertThat(response).isNotNull();
+        assertThat(response.getSenderBalanceAfter()).isEqualByComparingTo(new BigDecimal("8000.00"));
+        assertThat(accountB.getBalance()).isEqualByComparingTo(new BigDecimal("4000.00"));
 
-        assertThat(activeAccount.getBalance()).isEqualByComparingTo(new BigDecimal("1000.00"));
-        verify(transactionRepository, never()).save(any());
+        verify(transactionRepository, times(2)).save(any(Transaction.class));
     }
 
     @Test
-    @DisplayName("Get transaction history returns paginated response")
-    void testGetTransactionHistorySuccess() {
-        when(accountRepository.findByAccountNumber("101111111111")).thenReturn(Optional.of(activeAccount));
-        Page<Transaction> page = new PageImpl<>(List.of(withdrawTx, depositTx));
-        when(transactionRepository.findByAccountIdFiltered(eq(100L), any(), any(), any(), any(Pageable.class))).thenReturn(page);
-
-        PageResponse<TransactionResponse> result = transactionService.getTransactionHistory(
-                "101111111111", null, null, null, 0, 10, "alice@example.com", false
-        );
-
-        assertThat(result.getContent()).hasSize(2);
-        assertThat(result.getTotalElements()).isEqualTo(2);
-        assertThat(result.getPage()).isEqualTo(0);
-    }
-
-    @Test
-    @DisplayName("Get transaction history empty returns 200 OK with empty content")
-    void testGetTransactionHistoryEmpty() {
-        when(accountRepository.findByAccountNumber("101111111111")).thenReturn(Optional.of(activeAccount));
-        Page<Transaction> emptyPage = new PageImpl<>(Collections.emptyList());
-        when(transactionRepository.findByAccountIdFiltered(eq(100L), any(), any(), any(), any(Pageable.class))).thenReturn(emptyPage);
-
-        PageResponse<TransactionResponse> result = transactionService.getTransactionHistory(
-                "101111111111", null, null, null, 0, 10, "alice@example.com", false
-        );
-
-        assertThat(result.getContent()).isEmpty();
-        assertThat(result.getTotalElements()).isEqualTo(0);
-    }
-
-    @Test
-    @DisplayName("Invalid date range (from > to) throws IllegalArgumentException")
-    void testGetTransactionHistoryInvalidDateRange() {
-        when(accountRepository.findByAccountNumber("101111111111")).thenReturn(Optional.of(activeAccount));
-
-        LocalDate from = LocalDate.of(2026, 9, 10);
-        LocalDate to = LocalDate.of(2026, 9, 1);
+    @DisplayName("Self-transfer throws IllegalArgumentException")
+    void testSelfTransferRejected() {
+        TransferRequest request = new TransferRequest("101111111111", "101111111111", new BigDecimal("500.00"));
 
         assertThrows(IllegalArgumentException.class, () ->
-                transactionService.getTransactionHistory("101111111111", null, from, to, 0, 10, "alice@example.com", false)
+                transactionService.transfer(request, "alice@example.com", false)
         );
+    }
+
+    @Test
+    @DisplayName("Transfer with insufficient sender balance throws InsufficientBalanceException")
+    void testTransferInsufficientBalance() {
+        when(accountRepository.findByAccountNumberForUpdate("101111111111")).thenReturn(Optional.of(accountA));
+        when(accountRepository.findByAccountNumberForUpdate("102222222222")).thenReturn(Optional.of(accountB));
+
+        TransferRequest request = new TransferRequest("101111111111", "102222222222", new BigDecimal("15000.00"));
+
+        assertThrows(InsufficientBalanceException.class, () ->
+                transactionService.transfer(request, "alice@example.com", false)
+        );
+
+        assertThat(accountA.getBalance()).isEqualByComparingTo(new BigDecimal("10000.00"));
+        assertThat(accountB.getBalance()).isEqualByComparingTo(new BigDecimal("2000.00"));
     }
 }

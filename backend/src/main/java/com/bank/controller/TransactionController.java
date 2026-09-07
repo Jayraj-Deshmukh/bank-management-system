@@ -55,6 +55,17 @@ public class TransactionController {
         return ResponseEntity.ok(apiResponse);
     }
 
+    @PostMapping("/transfer")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<ApiResponse<TransferResponse>> transfer(@Valid @RequestBody TransferRequest request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+
+        TransferResponse response = transactionService.transfer(request, userEmail, false);
+        ApiResponse<TransferResponse> apiResponse = new ApiResponse<>(true, "Fund transfer completed successfully", response);
+        return ResponseEntity.ok(apiResponse);
+    }
+
     @GetMapping("/{accountNumber}/transactions")
     @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<PageResponse<TransactionResponse>>> getTransactionHistory(
